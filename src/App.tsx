@@ -1,6 +1,51 @@
+import { useEffect, useState } from 'react';
 import './App.css'
+import { message } from 'antd';
 
 function App() {
+
+  const API = import.meta.env.VITE_API_KEY;
+  console.log(API);
+
+
+  const [searchQuery, setSearchQuery] = useState<string | null>("Flowers");
+  const [perPageData, setPerPageData] = useState<number | null>(12);
+  const [pageNo, setPageNo] = useState<number | null>(1);
+  const [photos, setPhotos] = useState([]);
+
+
+  const fetchData = async () => {
+
+    const url = `https://api.pexels.com/v1/search?query=${searchQuery}&page=${pageNo}&per_page=${perPageData}`;
+
+    try {
+
+      const response = await fetch(url, { headers: { Authorization: API } });
+
+      if (!response.ok) {
+        message.error(response.status || "Something Went Wrong...");
+      }
+
+      const data = await response.json();
+      setPhotos(data?.photos);
+      console.log(data);
+
+
+    } catch (err: any) {
+
+      message.error(err.message);
+
+    };
+
+  };
+
+  useEffect(() => {
+
+    fetchData();
+
+  }, [pageNo])
+
+
   return (
     <>
       <section className="app">
@@ -48,41 +93,57 @@ function App() {
 
           {/* Result */}
           <div className="result-section">
-            <div className="image-card">
 
-              <div className="image-wrapper">
-                <img
-                  src="https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&w=1200&q=80"
-                  alt="Beautiful landscape"
-                />
+            {photos.length > 0 ? (
+              <>
+                {
+                  photos.map((images, index) => (
 
-                <div className="image-overlay">
-                  <button className="preview-btn" type="button">
-                    <i className="ri-eye-line"></i>
-                    Preview
-                  </button>
-                </div>
-              </div>
+                    <div className="image-card" key={index}>
 
-              <div className="card-content">
-                <div>
-                  <p className="image-title">
-                    Beautiful Landscape
-                  </p>
+                      <div className="image-wrapper">
+                        <img
+                          src={images?.url}
+                          alt={images?.alt}
+                        />
 
-                  <p className="image-info">
-                    <i className="ri-image-line"></i>
-                    High Quality Image
-                  </p>
-                </div>
+                        <div className="image-overlay">
+                          <button className="preview-btn" type="button">
+                            <i className="ri-eye-line"></i>
+                            Preview
+                          </button>
+                        </div>
+                      </div>
 
-                <button className="download-btn" type="button">
-                  <i className="ri-download-2-line"></i>
-                  Download
-                </button>
-              </div>
+                      <div className="card-content">
+                        <div>
+                          <p className="image-title">
+                           Photographer: {images?.photographer}
+                          </p>
 
-            </div>
+                          <p className="image-info">
+                            <i className="ri-image-line"></i>
+                            High Quality Image
+                          </p>
+                        </div>
+
+                        <button className="download-btn" type="button">
+                          <i className="ri-download-2-line"></i>
+                          Download
+                        </button>
+                      </div>
+
+                    </div>
+                  ))
+                }
+              </>
+            )
+              : (
+                <>
+                </>
+              )
+            }
+
           </div>
 
         </div>
@@ -92,6 +153,7 @@ function App() {
           <p>
             © 2026 Image Search. Made with
             <i className="ri-heart-3-fill"></i>
+            By <strong>Mo. Sarfraj Shaikh</strong>
           </p>
         </footer>
       </section>
